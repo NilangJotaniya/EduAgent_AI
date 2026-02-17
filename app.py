@@ -1,32 +1,75 @@
+# ✅ Auto start Ollama first
+from utils.ollama_manager import start_ollama
+start_ollama()
+
 import streamlit as st
 
-from agents.query_agent import understand_query
 from agents.retrieval_agent import retrieve_info
 from agents.response_agent import generate_answer
-from agents.escalation_agent import check_escalation
+from utils.memory import add_to_memory
+from utils.mongo_memory import save_chat
 from utils.vectorstore import add_documents
 
-st.title("🎓 EduAgent AI – Multi-Agent Assistant")
 
-# Load knowledge base once
+# --------------------------------
+# 🎨 Streamlit Page Setup
+# --------------------------------
+st.set_page_config(page_title="EduAgent AI", layout="wide")
+
+st.title("🎓 EduAgent AI – Academic Assistant")
+
+
+# --------------------------------
+# 🧠 Load Knowledge Base Once
+# --------------------------------
 add_documents()
 
-user_input = st.text_input("Ask your academic question:")
 
-if st.button("Send"):
+# --------------------------------
+# 💬 Chat History State
+# --------------------------------
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
-    if user_input:
 
-        category = understand_query(user_input)
+# --------------------------------
+# 💬 Show Old Messages (ChatGPT Style)
+# --------------------------------
+for msg in st.session_state.messages:
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
 
-        context = retrieve_info(user_input)
 
-        answer = generate_answer(user_input, context)
+# --------------------------------
+# 💬 Chat Input Box (NEW UI)
+# --------------------------------
+if prompt := st.chat_input("Ask your academic question..."):
 
-        escalate = check_escalation(answer)
+    # Show user message
+    st.session_state.messages.append({"role": "user", "content": prompt})
 
-        st.write("📌 Category:", category)
-        st.write("🤖 EduAgent AI:", answer)
+    with st.chat_message("user"):
+        st.markdown(prompt)
 
-        if escalate:
-            st.warning("⚠️ Escalation Needed: Contact Admin")
+    # --------------------------------
+    # 🤖 AI PROCESSING
+    # --------------------------------
+    context = retrieve_info(prompt)
+
+    with st.chat_message("assistant"):
+        message_placeholder = st.empty()
+
+        # Generate Answer
+        answer = generate_answer(prompt, context)
+
+        # Typing effect
+        full_response = ""
+        for word in answer.split():
+            full_response += word + " "
+            message_placeholder.markdown(full_response + "▌")
+        message_placeholder.markdown(full_response)
+
+    # Save memory
+    st.session_state.messages.append({"role": "assistant", "content": full_response})
+    add_to_memory(prompt, full_response)
+    save_chat(prompt, full_response)
