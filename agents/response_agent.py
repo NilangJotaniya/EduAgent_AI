@@ -1,17 +1,22 @@
 from utils.ollama_llm import ask_llm
+from utils.memory import get_memory
 
 def generate_answer(user_input, context):
 
-    prompt = f"""
-    You are EduAgent AI.
+    memory = get_memory()
 
-    Use this academic information:
+    prompt = f"""
+    You are EduAgent AI, a fast academic assistant.
+
+    Conversation History:
+    {memory}
+
+    Academic Knowledge:
     {context}
 
-    Answer the student question clearly.
+    Answer clearly and briefly.
 
     Question: {user_input}
     """
 
-    response = ask_llm(prompt)
-    return response
+    return ask_llm(prompt)
