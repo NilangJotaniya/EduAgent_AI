@@ -1,75 +1,96 @@
-# ✅ Auto start Ollama first
-from utils.ollama_manager import start_ollama
-start_ollama()
-
 import streamlit as st
 
+from utils.ollama_manager import start_ollama
+from agents.query_agent import understand_query
 from agents.retrieval_agent import retrieve_info
 from agents.response_agent import generate_answer
 from utils.memory import add_to_memory
 from utils.mongo_memory import save_chat
 from utils.vectorstore import add_documents
 
+# Auto start Ollama
+start_ollama()
 
-# --------------------------------
-# 🎨 Streamlit Page Setup
-# --------------------------------
-st.set_page_config(page_title="EduAgent AI", layout="wide")
+st.set_page_config(page_title="EduAgent AI")
 
-st.title("🎓 EduAgent AI – Academic Assistant")
+# ----------- PRO UI STYLING -----------
+st.markdown("""
+<style>
+.big-title {
+    font-size:48px;
+    font-weight:700;
+    background: linear-gradient(90deg,#6366f1,#ec4899);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+}
 
+.chat-bubble-user {
+    background:#1e293b;
+    padding:12px;
+    border-radius:10px;
+    margin:5px;
+}
 
-# --------------------------------
-# 🧠 Load Knowledge Base Once
-# --------------------------------
+.chat-bubble-ai {
+    background:#312e81;
+    padding:12px;
+    border-radius:10px;
+    margin:5px;
+}
+</style>
+""", unsafe_allow_html=True)
+
+st.markdown('<div class="big-title">🎓 EduAgent AI</div>', unsafe_allow_html=True)
+st.write("Your Intelligent Academic Assistant powered by Local AI.")
+
+# Load knowledge base
 add_documents()
 
-
-# --------------------------------
-# 💬 Chat History State
-# --------------------------------
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
+# ---------- CHAT HISTORY ----------
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
-# --------------------------------
-# 💬 Show Old Messages (ChatGPT Style)
-# --------------------------------
+# Render chat history
 for msg in st.session_state.messages:
-    with st.chat_message(msg["role"]):
-        st.markdown(msg["content"])
+    if msg["role"] == "user":
+        st.chat_message("user").write(msg["content"])
+    else:
+        st.chat_message("assistant").write(msg["content"])
 
+# ---------- CHAT INPUT ----------
+user_input = st.chat_input("Ask about exams, fees, attendance...")
 
-# --------------------------------
-# 💬 Chat Input Box (NEW UI)
-# --------------------------------
-if prompt := st.chat_input("Ask your academic question..."):
+if user_input:
 
-    # Show user message
-    st.session_state.messages.append({"role": "user", "content": prompt})
+    # Show user message immediately
+    st.session_state.messages.append({"role": "user", "content": user_input})
+    st.chat_message("user").write(user_input)
 
-    with st.chat_message("user"):
-        st.markdown(prompt)
+    # Retrieval
+    category = understand_query(user_input)
+    context = retrieve_info(user_input)
 
-    # --------------------------------
-    # 🤖 AI PROCESSING
-    # --------------------------------
-    context = retrieve_info(prompt)
+    # Create assistant container
+    assistant_container = st.chat_message("assistant")
+    message_placeholder = assistant_container.empty()
 
-    with st.chat_message("assistant"):
-        message_placeholder = st.empty()
+    full_answer = ""
 
-        # Generate Answer
-        answer = generate_answer(prompt, context)
+    # STREAM RESPONSE
+    response_stream = generate_answer(user_input, context)
 
-        # Typing effect
-        full_response = ""
-        for word in answer.split():
-            full_response += word + " "
-            message_placeholder.markdown(full_response + "▌")
-        message_placeholder.markdown(full_response)
+    for partial in response_stream:
+        full_answer = partial
+        message_placeholder.write(full_answer)
 
     # Save memory
-    st.session_state.messages.append({"role": "assistant", "content": full_response})
-    add_to_memory(prompt, full_response)
-    save_chat(prompt, full_response)
+    add_to_memory(user_input, full_answer)
+    save_chat(user_input, full_answer)
+
+    # Append assistant message AFTER streaming
+    st.session_state.messages.append(
+        {"role": "assistant", "content": full_answer}
+    )
