@@ -35,7 +35,7 @@ def get_database():
             raise ValueError(
                 "MONGO_URI not found in .env file!\n"
                 "Add this line to your .env:\n"
-                "mongodb+srv://username:password@eduagent.0xt78mo.mongodb.net/"
+                "mongodb+srv://username:password@1.mongodb.net/"
             )
 
         _client = MongoClient(mongo_uri, server_api=ServerApi('1'))
@@ -43,7 +43,7 @@ def get_database():
         _client.admin.command('ping')
         print("✅ Connected to MongoDB Atlas successfully!")
 
-        db_name = os.getenv("MONGO_DB_NAME", "eduagent_db")
+        db_name = os.getenv("MONGO_DB_NAME", "db")
         _db = _client[db_name]
 
         return _db
@@ -404,3 +404,4 @@ def get_statistics() -> dict:
                                 "pending_escalated", "uploaded_pdfs",
 
                                 "exam_entries", "fee_entries"]}
+
