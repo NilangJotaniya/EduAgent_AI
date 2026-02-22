@@ -66,7 +66,7 @@ Student Query
       │
       ▼
 ┌─────────────────────────────────────────────┐
-│              EduAgent AI Pipeline            │
+│              EduAgent AI Pipeline           │
 │                                             │
 │  1. Escalation Agent  ──► Sensitive? ──► Admin (MongoDB)
 │         │ No                                │
