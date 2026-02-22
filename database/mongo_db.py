@@ -35,7 +35,7 @@ def get_database():
             raise ValueError(
                 "MONGO_URI not found in .env file!\n"
                 "Add this line to your .env:\n"
-                "mongodb+srv://eduagent:eduagent@eduagent.0xt78mo.mongodb.net/"
+                "mongodb+srv://username:password@eduagent.0xt78mo.mongodb.net/"
             )
 
         _client = MongoClient(mongo_uri, server_api=ServerApi('1'))
@@ -402,4 +402,5 @@ def get_statistics() -> dict:
         print(f"❌ Error fetching stats: {e}")
         return {k: 0 for k in ["total_faqs", "total_escalated",
                                 "pending_escalated", "uploaded_pdfs",
+
                                 "exam_entries", "fee_entries"]}
