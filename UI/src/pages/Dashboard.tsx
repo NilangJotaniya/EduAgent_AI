@@ -154,7 +154,7 @@ export default function Dashboard() {
   if (!authenticated) {
     return (
       <div className="min-h-screen bg-cream-50 p-6 lg:p-10 flex items-center justify-center">
-        <Card title="Admin Login" subtitle="Only admins can view and edit records" className="w-full max-w-md">
+        <Card title="Admin Login" subtitle="Only admins can view and edit records" className="w-full max-w-xl">
           <div className="space-y-4">
             <FormField label="Admin Password" required>
               <Input type="password" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} />

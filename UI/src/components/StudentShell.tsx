@@ -6,15 +6,15 @@ import { Button } from './FormField';
 import { useStudentPortal } from '../lib/student-portal';
 
 function getPageCopy(pathname: string) {
-  if (pathname === '/chat') {
-    return { title: 'Academic Assistant', subtitle: 'Chat with EduAgent for institute-related queries' };
+  if (pathname === '/details') {
+    return { title: 'Student Details', subtitle: 'Profile, notices, documents, and current academic information' };
   }
-  return { title: 'Student Details', subtitle: 'Profile, notices, documents, and current academic information' };
+  return { title: 'Student Chat', subtitle: 'EduAgent AI Assistant' };
 }
 
 export default function StudentShell() {
   const location = useLocation();
-  const { authenticated, initializing, student, reminders, unreadReminders, logout, markRemindersRead } = useStudentPortal();
+  const { authenticated, initializing, reminders, unreadReminders, logout, markRemindersRead } = useStudentPortal();
   const page = getPageCopy(location.pathname);
 
   if (initializing) {
@@ -33,9 +33,7 @@ export default function StudentShell() {
           <div className="max-w-[1250px] mx-auto px-6 lg:px-10 h-16 flex items-center justify-between">
             <div>
               <h1 className="text-lg font-bold text-slate-800">{page.title}</h1>
-              <p className="text-xs text-slate-400 -mt-0.5">
-                {student?.full_name} ({student?.enrollment_no || student?.student_id}) • {page.subtitle}
-              </p>
+              <p className="text-xs text-slate-400 -mt-0.5">{page.subtitle}</p>
             </div>
             <div className="flex items-center gap-3">
               <div className="relative group">

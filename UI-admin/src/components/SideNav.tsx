@@ -61,7 +61,9 @@ export default function SideNav() {
             Admin Panel
           </NavLink>
           <a
-            href={`${CHAT_APP_URL}/`}
+            href={`${CHAT_APP_URL}/?fresh=1`}
+            target="_blank"
+            rel="noreferrer"
             className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-burgundy-200 hover:bg-burgundy-600/50 hover:text-white transition-all duration-200"
           >
             <ExternalLink size={18} />

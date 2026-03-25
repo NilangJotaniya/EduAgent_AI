@@ -64,6 +64,10 @@ export function StudentPortalProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const init = async () => {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('fresh') === '1') {
+        clearStudentToken();
+      }
       try {
         await applyBundle();
         setAuthenticated(true);

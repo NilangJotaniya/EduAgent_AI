@@ -9,13 +9,14 @@ export default function App() {
   return (
     <StudentPortalProvider>
       <BrowserRouter>
-          <Routes>
-            <Route element={<StudentShell />}>
-              <Route path="/" element={<StudentDetails />} />
-              <Route path="/chat" element={<StudentChat />} />
-            </Route>
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+        <Routes>
+          <Route element={<StudentShell />}>
+            <Route path="/" element={<Navigate to="/details" replace />} />
+            <Route path="/details" element={<StudentDetails />} />
+            <Route path="/chat" element={<StudentChat />} />
+          </Route>
+          <Route path="*" element={<Navigate to="/details" replace />} />
+        </Routes>
       </BrowserRouter>
     </StudentPortalProvider>
   );

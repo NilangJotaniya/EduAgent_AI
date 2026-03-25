@@ -262,7 +262,7 @@ export default function Dashboard() {
   if (!authenticated) {
     return (
       <div className="min-h-screen bg-cream-50 flex items-center justify-center p-8">
-        <Card title="Admin Login" subtitle="Secure admin access only" className="w-full max-w-md">
+        <Card title="Admin Login" subtitle="Secure admin access only" className="w-full max-w-xl">
           <div className="space-y-4">
             <FormField label="Admin Password" required>
               <Input
