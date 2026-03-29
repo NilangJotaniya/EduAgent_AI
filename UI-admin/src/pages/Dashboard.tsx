@@ -103,6 +103,10 @@ export default function Dashboard() {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
 
+  useEffect(() => {
+    document.title = 'EduAgent AI · Admin Dashboard';
+  }, []);
+
   const [stats, setStats] = useState<Stats | null>(null);
   const [faqs, setFaqs] = useState<FAQ[]>([]);
   const [escalations, setEscalations] = useState<Escalation[]>([]);

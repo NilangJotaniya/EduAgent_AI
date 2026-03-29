@@ -1,4 +1,5 @@
 import { Bell } from 'lucide-react';
+import { useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import SideNav from './SideNav';
 import StudentLoginScreen from './StudentLoginScreen';
@@ -16,6 +17,14 @@ export default function StudentShell() {
   const location = useLocation();
   const { authenticated, initializing, reminders, unreadReminders, logout, markRemindersRead } = useStudentPortal();
   const page = getPageCopy(location.pathname);
+
+  useEffect(() => {
+    if (!authenticated) {
+      document.title = 'EduAgent AI · Student Portal';
+      return;
+    }
+    document.title = `EduAgent AI · ${page.title}`;
+  }, [authenticated, page.title]);
 
   if (initializing) {
     return <div className="min-h-screen bg-cream-50" />;
