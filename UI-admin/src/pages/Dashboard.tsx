@@ -10,6 +10,7 @@ import {
   Filter,
   GraduationCap,
   HelpCircle,
+  History,
   Loader2,
   Pencil,
   Plus,
@@ -36,6 +37,7 @@ import {
   getExams,
   getFaqs,
   getFeeLedger,
+  getAdminAuditLogs,
   getDownloadEvents,
   getPdfs,
   getStats,
@@ -48,9 +50,9 @@ import {
   recordFaqFeedback,
   sendFeeReminder,
 } from '../lib/api';
-import type { DownloadEvent, Escalation, Exam, FAQ, PDFDoc, Stats, Student, StudentFeeLedger } from '../lib/api';
+import type { AdminAuditLog, DownloadEvent, Escalation, Exam, FAQ, PDFDoc, Stats, Student, StudentFeeLedger } from '../lib/api';
 
-type TabId = 'faqs' | 'escalations' | 'pdfs' | 'exams' | 'fees' | 'students';
+type TabId = 'faqs' | 'escalations' | 'pdfs' | 'exams' | 'fees' | 'students' | 'audit';
 
 const tabConfig: { id: TabId; label: string; icon: React.ComponentType<{ size?: number }>; getCount: (ctx: CountsCtx) => number }[] = [
   { id: 'faqs', label: 'FAQs', icon: HelpCircle, getCount: (ctx) => ctx.faqs },
@@ -59,6 +61,7 @@ const tabConfig: { id: TabId; label: string; icon: React.ComponentType<{ size?: 
   { id: 'exams', label: 'Exams', icon: GraduationCap, getCount: (ctx) => ctx.exams },
   { id: 'fees', label: 'Fees', icon: CreditCard, getCount: (ctx) => ctx.fees },
   { id: 'students', label: 'Students', icon: Users, getCount: (ctx) => ctx.students },
+  { id: 'audit', label: 'Audit', icon: History, getCount: (ctx) => ctx.audit },
 ];
 
 interface CountsCtx {
@@ -68,6 +71,7 @@ interface CountsCtx {
   exams: number;
   fees: number;
   students: number;
+  audit: number;
 }
 
 function formatInrLakh(amount: number): string {
@@ -107,6 +111,7 @@ export default function Dashboard() {
   const [students, setStudents] = useState<Student[]>([]);
   const [pdfs, setPdfs] = useState<PDFDoc[]>([]);
   const [downloadEvents, setDownloadEvents] = useState<DownloadEvent[]>([]);
+  const [auditLogs, setAuditLogs] = useState<AdminAuditLog[]>([]);
 
   const [newFaq, setNewFaq] = useState({ question: '', answer: '', category: 'General', keywords: '' });
   const [newExam, setNewExam] = useState({ subject: '', exam_date: '', exam_time: '', venue: '', semester: 1 });
@@ -149,6 +154,7 @@ export default function Dashboard() {
     exams: exams.length,
     fees: feeLedger.length,
     students: students.length,
+    audit: auditLogs.length,
   };
 
   const filteredFaqs = useMemo(() => {
@@ -180,7 +186,7 @@ export default function Dashboard() {
     setLoading(true);
     setError('');
     try {
-      const [statsData, faqData, escalationData, examData, pdfData, ledgerData, studentData, downloadData] = await Promise.all([
+      const [statsData, faqData, escalationData, examData, pdfData, ledgerData, studentData, downloadData, auditData] = await Promise.all([
         getStats(),
         getFaqs(),
         getEscalations(statusFilter),
@@ -189,6 +195,7 @@ export default function Dashboard() {
         getFeeLedger(ledgerStudentFilter),
         getStudents(),
         getDownloadEvents(),
+        getAdminAuditLogs(300),
       ]);
       setStats(statsData);
       setFaqs(faqData.items);
@@ -198,6 +205,7 @@ export default function Dashboard() {
       setFeeLedger(ledgerData.items);
       setStudents(studentData.items);
       setDownloadEvents(downloadData.items);
+      setAuditLogs(auditData.items);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load admin data');
     } finally {
@@ -248,6 +256,7 @@ export default function Dashboard() {
     if (activeTab === 'exams') downloadJson('exams.json', exams);
     if (activeTab === 'fees') downloadJson('fees-ledger.json', feeLedger);
     if (activeTab === 'students') downloadJson('students.json', filteredStudents);
+    if (activeTab === 'audit') downloadJson('admin-audit-logs.json', auditLogs);
   };
 
   const handleAddNew = () => {
@@ -1051,6 +1060,26 @@ export default function Dashboard() {
                 </Card>
               </div>
             </div>
+          )}
+
+          {activeTab === 'audit' && (
+            <Card title="Admin Activity Log" subtitle={`${auditLogs.length} recent actions`} noPadding>
+              <div className="divide-y divide-slate-100">
+                {auditLogs.map((log) => (
+                  <div key={log._id} className="px-8 py-4">
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                      <p className="text-[14px] font-semibold text-slate-800">{log.action}</p>
+                      <p className="text-[12px] text-slate-500">Admin: {log.admin_id}</p>
+                      <p className="text-[12px] text-slate-500">
+                        Target: {log.target_type || 'n/a'} {log.target_id ? `(${log.target_id})` : ''}
+                      </p>
+                    </div>
+                    <p className="text-[12px] text-slate-400 mt-1">{log.created_at}</p>
+                  </div>
+                ))}
+                {auditLogs.length === 0 && <p className="px-8 py-4 text-sm text-slate-500">No audit events available.</p>}
+              </div>
+            </Card>
           )}
         </section>
 

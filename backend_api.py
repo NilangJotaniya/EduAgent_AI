@@ -33,6 +33,7 @@ from database.mongo_db import (
     get_all_faqs,
     get_all_fees,
     get_all_uploaded_pdfs,
+    get_admin_audit_logs,
     get_database,
     get_fee_ledger,
     get_escalated_queries,
@@ -40,16 +41,20 @@ from database.mongo_db import (
     get_student_by_identifier_credentials,
     get_student_by_id,
     get_uploaded_pdf_by_id,
+    log_admin_action,
     get_statistics,
     increment_faq_view,
     record_pdf_download,
     record_faq_feedback,
     record_uploaded_pdf,
     send_fee_reminder,
+    ensure_admin_account,
     mark_student_reminders_read,
     update_escalated_query,
     update_faq,
+    update_student_password,
     update_student,
+    verify_admin_credentials,
 )
 from start_llm import initialize_llm
 from utils.student_importer import parse_student_file
@@ -77,7 +82,7 @@ DEMO_SEED_ENABLED = os.getenv("ENABLE_DEMO_SEED", "false").strip().lower() in {"
 
 _cached_llm_status: Optional[Dict[str, Any]] = None
 _cached_agents: Optional[Dict[str, Any]] = None
-_admin_tokens: Dict[str, datetime] = {}
+_admin_tokens: Dict[str, Dict[str, str]] = {}
 _student_tokens: Dict[str, Dict[str, str]] = {}
 
 
@@ -93,6 +98,11 @@ class StudentLoginRequest(BaseModel):
     identifier: str = ""
     student_id: str = ""
     password: str
+
+
+class StudentPasswordChangeRequest(BaseModel):
+    current_password: str
+    new_password: str
 
 
 class EscalationUpdate(BaseModel):
@@ -151,7 +161,15 @@ class StudentCreate(BaseModel):
 
 def _cleanup_tokens() -> None:
     now = datetime.now()
-    expired = [t for t, exp in _admin_tokens.items() if exp < now]
+    expired = []
+    for token, data in _admin_tokens.items():
+        expires_at = data.get("expires_at", "")
+        try:
+            exp_dt = datetime.fromisoformat(expires_at)
+        except ValueError:
+            exp_dt = now
+        if exp_dt < now:
+            expired.append(token)
     for token in expired:
         _admin_tokens.pop(token, None)
 
@@ -168,14 +186,18 @@ def _cleanup_tokens() -> None:
         _student_tokens.pop(token, None)
 
 
-def _issue_admin_token() -> Dict[str, Any]:
+def _issue_admin_token(admin_id: str = "admin") -> Dict[str, Any]:
     token = secrets.token_urlsafe(32)
     expires_at = datetime.now() + timedelta(hours=TOKEN_TTL_HOURS)
-    _admin_tokens[token] = expires_at
+    _admin_tokens[token] = {
+        "admin_id": admin_id,
+        "expires_at": expires_at.isoformat(),
+    }
     return {
         "token": token,
         "expires_at": expires_at.isoformat(),
         "token_type": "bearer",
+        "admin_id": admin_id,
     }
 
 
@@ -364,17 +386,14 @@ def _seed_demo_data() -> None:
 
 def require_admin(
     authorization: str = Header(default=""),
-    x_admin_password: str = Header(default=""),
-) -> None:
+) -> Dict[str, str]:
     _cleanup_tokens()
 
     if authorization.startswith("Bearer "):
         token = authorization.replace("Bearer ", "", 1).strip()
-        if token in _admin_tokens:
-            return
-
-    if x_admin_password and x_admin_password == ADMIN_PASSWORD:
-        return
+        admin_auth = _admin_tokens.get(token)
+        if admin_auth:
+            return {"token": token, "admin_id": admin_auth.get("admin_id", "admin")}
 
     raise HTTPException(status_code=403, detail="Unauthorized admin access")
 
@@ -388,6 +407,28 @@ def require_student(authorization: str = Header(default="")) -> Dict[str, str]:
     if not data:
         raise HTTPException(status_code=403, detail="Invalid or expired student token")
     return data
+
+
+def _audit(
+    admin_auth: Dict[str, str],
+    action: str,
+    target_type: str = "",
+    target_id: str = "",
+    details: Optional[Dict[str, Any]] = None,
+) -> None:
+    log_admin_action(
+        admin_id=admin_auth.get("admin_id", "admin"),
+        action=action,
+        target_type=target_type,
+        target_id=target_id,
+        details=details or {},
+    )
+
+
+@app.on_event("startup")
+def on_startup() -> None:
+    _seed_demo_data()
+    ensure_admin_account(ADMIN_PASSWORD)
 
 
 def get_llm_status() -> Dict[str, Any]:
@@ -582,10 +623,12 @@ def download_uploaded_pdf(pdf_id: str) -> FileResponse:
 
 @app.post("/api/admin/login")
 def admin_login(payload: AdminLoginRequest) -> Dict[str, Any]:
-    if payload.password != ADMIN_PASSWORD:
+    if not verify_admin_credentials(payload.password):
+        log_admin_action("admin", "admin.login.failed", "auth", "admin", {"success": False})
         raise HTTPException(status_code=403, detail="Invalid admin password")
 
-    token_data = _issue_admin_token()
+    token_data = _issue_admin_token(admin_id="admin")
+    log_admin_action("admin", "admin.login", "auth", "admin", {"success": True})
     return {"ok": True, **token_data}
 
 
@@ -602,6 +645,27 @@ def student_login(payload: StudentLoginRequest) -> Dict[str, Any]:
 
     token_data = _issue_student_token(student.get("student_id", identifier), student.get("full_name", "Student"))
     return {"ok": True, **token_data}
+
+
+@app.post("/api/student/change-password")
+def student_change_password(payload: StudentPasswordChangeRequest, student_auth: Dict[str, str] = Depends(require_student)) -> Dict[str, Any]:
+    current_password = payload.current_password.strip()
+    new_password = payload.new_password.strip()
+    if not current_password or not new_password:
+        raise HTTPException(status_code=400, detail="Both current and new password are required")
+    if len(new_password) < 8:
+        raise HTTPException(status_code=400, detail="New password must be at least 8 characters")
+    if current_password == new_password:
+        raise HTTPException(status_code=400, detail="New password must be different from current password")
+
+    verified = get_student_by_identifier_credentials(student_auth["student_id"], current_password)
+    if not verified:
+        raise HTTPException(status_code=403, detail="Current password is incorrect")
+
+    ok = update_student_password(student_auth["student_id"], new_password)
+    if not ok:
+        raise HTTPException(status_code=500, detail="Failed to update password")
+    return {"ok": True}
 
 
 @app.get("/api/student/me")
@@ -634,41 +698,44 @@ def student_mark_reminders_read(student_auth: Dict[str, str] = Depends(require_s
 
 
 @app.get("/api/admin/stats")
-def admin_stats(_: None = Depends(require_admin)) -> Dict[str, Any]:
+def admin_stats(_: Dict[str, str] = Depends(require_admin)) -> Dict[str, Any]:
     return get_statistics()
 
 
 @app.get("/api/admin/escalations")
-def admin_escalations(status: str = "all", _: None = Depends(require_admin)) -> Dict[str, Any]:
+def admin_escalations(status: str = "all", _: Dict[str, str] = Depends(require_admin)) -> Dict[str, Any]:
     return {"items": get_escalated_queries(status)}
 
 
 @app.put("/api/admin/escalations/{query_id}")
-def admin_update_escalation(query_id: str, payload: EscalationUpdate, _: None = Depends(require_admin)) -> Dict[str, Any]:
+def admin_update_escalation(query_id: str, payload: EscalationUpdate, admin_auth: Dict[str, str] = Depends(require_admin)) -> Dict[str, Any]:
     ok = update_escalated_query(query_id, payload.status, payload.admin_notes)
     if not ok:
         raise HTTPException(status_code=500, detail="Failed to update escalation")
+    _audit(admin_auth, "escalation.update", "escalation", query_id, {"status": payload.status})
     return {"ok": True}
 
 
 @app.get("/api/admin/faqs")
-def admin_faqs(_: None = Depends(require_admin)) -> Dict[str, Any]:
+def admin_faqs(_: Dict[str, str] = Depends(require_admin)) -> Dict[str, Any]:
     return {"items": get_all_faqs()}
 
 
 @app.post("/api/admin/faqs")
-def admin_add_faq(payload: FAQCreate, _: None = Depends(require_admin)) -> Dict[str, Any]:
+def admin_add_faq(payload: FAQCreate, admin_auth: Dict[str, str] = Depends(require_admin)) -> Dict[str, Any]:
     ok = add_faq(payload.category, payload.question, payload.answer, payload.keywords)
     if not ok:
         raise HTTPException(status_code=500, detail="Failed to add FAQ")
+    _audit(admin_auth, "faq.create", "faq", "", {"category": payload.category, "question": payload.question})
     return {"ok": True}
 
 
 @app.put("/api/admin/faqs/{faq_id}")
-def admin_update_faq(faq_id: str, payload: FAQUpdate, _: None = Depends(require_admin)) -> Dict[str, Any]:
+def admin_update_faq(faq_id: str, payload: FAQUpdate, admin_auth: Dict[str, str] = Depends(require_admin)) -> Dict[str, Any]:
     ok = update_faq(faq_id, payload.answer, payload.keywords)
     if not ok:
         raise HTTPException(status_code=500, detail="Failed to update FAQ")
+    _audit(admin_auth, "faq.update", "faq", faq_id)
     return {"ok": True}
 
 
@@ -689,62 +756,67 @@ def faq_view(faq_id: str) -> Dict[str, Any]:
 
 
 @app.delete("/api/admin/faqs/{faq_id}")
-def admin_delete_faq(faq_id: str, _: None = Depends(require_admin)) -> Dict[str, Any]:
+def admin_delete_faq(faq_id: str, admin_auth: Dict[str, str] = Depends(require_admin)) -> Dict[str, Any]:
     ok = delete_faq(faq_id)
     if not ok:
         raise HTTPException(status_code=500, detail="Failed to delete FAQ")
+    _audit(admin_auth, "faq.delete", "faq", faq_id)
     return {"ok": True}
 
 
 @app.get("/api/admin/exams")
-def admin_exams(_: None = Depends(require_admin)) -> Dict[str, Any]:
+def admin_exams(_: Dict[str, str] = Depends(require_admin)) -> Dict[str, Any]:
     return {"items": get_all_exams()}
 
 
 @app.post("/api/admin/exams")
-def admin_add_exam(payload: ExamCreate, _: None = Depends(require_admin)) -> Dict[str, Any]:
+def admin_add_exam(payload: ExamCreate, admin_auth: Dict[str, str] = Depends(require_admin)) -> Dict[str, Any]:
     ok = add_exam(payload.subject, payload.exam_date, payload.exam_time, payload.venue, payload.semester)
     if not ok:
         raise HTTPException(status_code=500, detail="Failed to add exam")
+    _audit(admin_auth, "exam.create", "exam", "", {"subject": payload.subject})
     return {"ok": True}
 
 
 @app.delete("/api/admin/exams/{exam_id}")
-def admin_delete_exam(exam_id: str, _: None = Depends(require_admin)) -> Dict[str, Any]:
+def admin_delete_exam(exam_id: str, admin_auth: Dict[str, str] = Depends(require_admin)) -> Dict[str, Any]:
     ok = delete_exam(exam_id)
     if not ok:
         raise HTTPException(status_code=500, detail="Failed to delete exam")
+    _audit(admin_auth, "exam.delete", "exam", exam_id)
     return {"ok": True}
 
 
 @app.get("/api/admin/fees")
-def admin_fees(_: None = Depends(require_admin)) -> Dict[str, Any]:
+def admin_fees(_: Dict[str, str] = Depends(require_admin)) -> Dict[str, Any]:
     return {"items": get_all_fees()}
 
 
 @app.post("/api/admin/fees")
-def admin_add_fee(payload: FeeCreate, _: None = Depends(require_admin)) -> Dict[str, Any]:
+def admin_add_fee(payload: FeeCreate, admin_auth: Dict[str, str] = Depends(require_admin)) -> Dict[str, Any]:
     ok = add_fee(payload.fee_type, payload.amount, payload.due_date, payload.description)
     if not ok:
         raise HTTPException(status_code=500, detail="Failed to add fee")
+    _audit(admin_auth, "fee.create", "fee", "", {"fee_type": payload.fee_type})
     return {"ok": True}
 
 
 @app.delete("/api/admin/fees/{fee_id}")
-def admin_delete_fee(fee_id: str, _: None = Depends(require_admin)) -> Dict[str, Any]:
+def admin_delete_fee(fee_id: str, admin_auth: Dict[str, str] = Depends(require_admin)) -> Dict[str, Any]:
     ok = delete_fee(fee_id)
     if not ok:
         raise HTTPException(status_code=500, detail="Failed to delete fee")
+    _audit(admin_auth, "fee.delete", "fee", fee_id)
     return {"ok": True}
 
 
 @app.get("/api/admin/students")
-def admin_students(_: None = Depends(require_admin)) -> Dict[str, Any]:
+def admin_students(_: Dict[str, str] = Depends(require_admin)) -> Dict[str, Any]:
     return {"items": get_all_students()}
 
 
 @app.post("/api/admin/students")
-def admin_add_student(payload: StudentCreate, _: None = Depends(require_admin)) -> Dict[str, Any]:
+def admin_add_student(payload: StudentCreate, admin_auth: Dict[str, str] = Depends(require_admin)) -> Dict[str, Any]:
     canonical_enrollment = payload.enrollment_no.strip()
     canonical_student_id = payload.student_id.strip() or canonical_enrollment
     if not canonical_enrollment or not payload.full_name.strip() or not payload.password.strip():
@@ -759,6 +831,7 @@ def admin_add_student(payload: StudentCreate, _: None = Depends(require_admin)) 
     )
     if not ok:
         raise HTTPException(status_code=500, detail="Failed to save student")
+    _audit(admin_auth, "student.create", "student", canonical_student_id)
     return {"ok": True}
 
 
@@ -767,7 +840,7 @@ async def admin_import_students(
     file: UploadFile = File(...),
     default_password: str = Form(...),
     replace_existing: bool = Form(False),
-    _: None = Depends(require_admin),
+    admin_auth: Dict[str, str] = Depends(require_admin),
 ) -> Dict[str, Any]:
     filename = (file.filename or "").strip()
     if not filename:
@@ -803,7 +876,7 @@ async def admin_import_students(
         if ok:
             imported += 1
 
-    return {
+    result = {
         "ok": True,
         "imported_count": imported,
         "skipped_count": summary.get("skipped_count", 0),
@@ -811,18 +884,21 @@ async def admin_import_students(
         "source_file": summary.get("source_file", filename),
         "replace_existing": replace_existing,
     }
+    _audit(admin_auth, "student.import", "student", "", result)
+    return result
 
 
 @app.delete("/api/admin/students/{student_id}")
-def admin_delete_student(student_id: str, _: None = Depends(require_admin)) -> Dict[str, Any]:
+def admin_delete_student(student_id: str, admin_auth: Dict[str, str] = Depends(require_admin)) -> Dict[str, Any]:
     ok = delete_student(student_id)
     if not ok:
         raise HTTPException(status_code=500, detail="Failed to delete student")
+    _audit(admin_auth, "student.delete", "student", student_id)
     return {"ok": True}
 
 
 @app.put("/api/admin/students/{student_id}")
-def admin_update_student(student_id: str, payload: StudentCreate, _: None = Depends(require_admin)) -> Dict[str, Any]:
+def admin_update_student(student_id: str, payload: StudentCreate, admin_auth: Dict[str, str] = Depends(require_admin)) -> Dict[str, Any]:
     canonical_enrollment = payload.enrollment_no.strip()
     canonical_student_id = payload.student_id.strip() or canonical_enrollment
     if not canonical_enrollment or not payload.full_name.strip():
@@ -838,16 +914,17 @@ def admin_update_student(student_id: str, payload: StudentCreate, _: None = Depe
     )
     if not ok:
         raise HTTPException(status_code=500, detail="Failed to update student")
+    _audit(admin_auth, "student.update", "student", student_id, {"next_student_id": canonical_student_id})
     return {"ok": True}
 
 
 @app.get("/api/admin/fees/ledger")
-def admin_fee_ledger(student_id: str = "", _: None = Depends(require_admin)) -> Dict[str, Any]:
+def admin_fee_ledger(student_id: str = "", _: Dict[str, str] = Depends(require_admin)) -> Dict[str, Any]:
     return {"items": get_fee_ledger(student_id.strip())}
 
 
 @app.post("/api/admin/fees/ledger")
-def admin_add_fee_ledger(payload: StudentFeeLedgerCreate, _: None = Depends(require_admin)) -> Dict[str, Any]:
+def admin_add_fee_ledger(payload: StudentFeeLedgerCreate, admin_auth: Dict[str, str] = Depends(require_admin)) -> Dict[str, Any]:
     ok = add_or_update_fee_ledger(
         payload.student_id.strip(),
         payload.fee_type.strip(),
@@ -858,25 +935,33 @@ def admin_add_fee_ledger(payload: StudentFeeLedgerCreate, _: None = Depends(requ
     )
     if not ok:
         raise HTTPException(status_code=500, detail="Failed to upsert fee ledger row")
+    _audit(admin_auth, "ledger.upsert", "ledger", payload.student_id, {"fee_type": payload.fee_type})
     return {"ok": True}
 
 
 @app.post("/api/admin/fees/ledger/{ledger_id}/reminder")
-def admin_send_fee_reminder(ledger_id: str, _: None = Depends(require_admin)) -> Dict[str, Any]:
+def admin_send_fee_reminder(ledger_id: str, admin_auth: Dict[str, str] = Depends(require_admin)) -> Dict[str, Any]:
     ok = send_fee_reminder(ledger_id, sent_by="admin")
     if not ok:
         raise HTTPException(status_code=500, detail="Failed to send reminder")
+    _audit(admin_auth, "reminder.send", "ledger", ledger_id)
     return {"ok": True}
 
 
 @app.get("/api/admin/downloads")
-def admin_download_events(_: None = Depends(require_admin)) -> Dict[str, Any]:
+def admin_download_events(_: Dict[str, str] = Depends(require_admin)) -> Dict[str, Any]:
     return {"items": get_download_events(200)}
 
 
 @app.get("/api/admin/pdfs")
-def admin_pdfs(_: None = Depends(require_admin)) -> Dict[str, Any]:
+def admin_pdfs(_: Dict[str, str] = Depends(require_admin)) -> Dict[str, Any]:
     return {"items": get_all_uploaded_pdfs()}
+
+
+@app.get("/api/admin/audit-logs")
+def admin_audit_logs(limit: int = 200, _: Dict[str, str] = Depends(require_admin)) -> Dict[str, Any]:
+    safe_limit = max(1, min(limit, 1000))
+    return {"items": get_admin_audit_logs(safe_limit)}
 
 
 @app.get("/api/student/fees")
@@ -916,7 +1001,7 @@ def student_download_document(pdf_id: str, token: str = "", authorization: str =
 
 
 @app.post("/api/admin/pdfs")
-async def admin_upload_pdf(file: UploadFile = File(...), _: None = Depends(require_admin)) -> Dict[str, Any]:
+async def admin_upload_pdf(file: UploadFile = File(...), admin_auth: Dict[str, str] = Depends(require_admin)) -> Dict[str, Any]:
     original_name = (file.filename or "").strip()
     if not original_name.lower().endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Only PDF files are allowed")
@@ -937,6 +1022,7 @@ async def admin_upload_pdf(file: UploadFile = File(...), _: None = Depends(requi
         raise HTTPException(status_code=500, detail=result.get("error", "PDF processing failed"))
 
     record_uploaded_pdf(stored_filename, result["pages"], result["chunks"], original_name=original_name)
+    _audit(admin_auth, "pdf.upload", "pdf", stored_filename, {"original_name": original_name})
 
     return {
         "ok": True,
@@ -946,7 +1032,7 @@ async def admin_upload_pdf(file: UploadFile = File(...), _: None = Depends(requi
 
 
 @app.delete("/api/admin/pdfs/{pdf_id}")
-def admin_delete_pdf(pdf_id: str, filename: str = "", _: None = Depends(require_admin)) -> Dict[str, Any]:
+def admin_delete_pdf(pdf_id: str, filename: str = "", admin_auth: Dict[str, str] = Depends(require_admin)) -> Dict[str, Any]:
     ok = delete_uploaded_pdf_record(pdf_id)
     if not ok:
         raise HTTPException(status_code=500, detail="Failed to delete PDF record")
@@ -956,4 +1042,5 @@ def admin_delete_pdf(pdf_id: str, filename: str = "", _: None = Depends(require_
         if os.path.exists(fp):
             os.remove(fp)
 
+    _audit(admin_auth, "pdf.delete", "pdf", pdf_id, {"filename": filename})
     return {"ok": True}

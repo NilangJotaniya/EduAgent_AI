@@ -534,6 +534,92 @@ def clear_all_students() -> bool:
         return False
 
 
+def update_student_password(student_id: str, new_password: str) -> bool:
+    """Update one student's password (stored as PBKDF2 hash)."""
+    db = get_database()
+    try:
+        if not student_id.strip() or not new_password.strip():
+            return False
+        db.students.update_one(
+            {"student_id": student_id.strip()},
+            {
+                "$set": {
+                    "password": hash_password(new_password.strip()),
+                    "updated_at": datetime.now().isoformat(),
+                }
+            },
+        )
+        return True
+    except Exception as e:
+        print(f"Error updating student password: {e}")
+        return False
+
+
+def ensure_admin_account(default_password: str) -> bool:
+    """Ensure one admin account exists with a hashed password."""
+    db = get_database()
+    try:
+        admin = db.admin_users.find_one({"admin_id": "admin"})
+        if admin and admin.get("password"):
+            return True
+        db.admin_users.update_one(
+            {"admin_id": "admin"},
+            {
+                "$set": {
+                    "admin_id": "admin",
+                    "password": hash_password(default_password),
+                    "updated_at": datetime.now().isoformat(),
+                },
+                "$setOnInsert": {"created_at": datetime.now().isoformat()},
+            },
+            upsert=True,
+        )
+        return True
+    except Exception as e:
+        print(f"Error ensuring admin account: {e}")
+        return False
+
+
+def verify_admin_credentials(password: str) -> bool:
+    """Verify admin password against stored hashed admin credentials."""
+    db = get_database()
+    try:
+        admin = db.admin_users.find_one({"admin_id": "admin"})
+        if not admin:
+            return False
+        stored_password = admin.get("password", "")
+        if not stored_password:
+            return False
+        return verify_password(password, stored_password)
+    except Exception as e:
+        print(f"Error verifying admin credentials: {e}")
+        return False
+
+
+def update_admin_password(current_password: str, new_password: str) -> bool:
+    """Rotate admin password after validating current password."""
+    db = get_database()
+    try:
+        admin = db.admin_users.find_one({"admin_id": "admin"})
+        if not admin:
+            return False
+        if not verify_password(current_password, admin.get("password", "")):
+            return False
+        db.admin_users.update_one(
+            {"admin_id": "admin"},
+            {
+                "$set": {
+                    "password": hash_password(new_password),
+                    "updated_at": datetime.now().isoformat(),
+                }
+            },
+        )
+        return True
+    except Exception as e:
+        print(f"Error updating admin password: {e}")
+        return False
+
+
 def get_fee_ledger(student_id: str = "") -> list:
     """Fetch student fee ledger rows, optionally by student_id."""
     db = get_database()
@@ -814,6 +900,41 @@ def get_download_events(limit: int = 200) -> list:
     for event in events:
         event["_id"] = str(event["_id"])
     return events
+
+
+def log_admin_action(
+    admin_id: str,
+    action: str,
+    target_type: str = "",
+    target_id: str = "",
+    details: dict | None = None,
+) -> bool:
+    """Persist an admin activity event for audit tracking."""
+    db = get_database()
+    try:
+        db.admin_audit_logs.insert_one(
+            {
+                "admin_id": admin_id or "admin",
+                "action": action,
+                "target_type": target_type,
+                "target_id": target_id,
+                "details": details or {},
+                "created_at": datetime.now().isoformat(),
+            }
+        )
+        return True
+    except Exception as e:
+        print(f"Error writing admin audit log: {e}")
+        return False
+
+
+def get_admin_audit_logs(limit: int = 200) -> list:
+    """Fetch recent admin activity logs."""
+    db = get_database()
+    logs = list(db.admin_audit_logs.find().sort("created_at", -1).limit(limit))
+    for item in logs:
+        item["_id"] = str(item["_id"])
+    return logs
 
 
 # ============================================================

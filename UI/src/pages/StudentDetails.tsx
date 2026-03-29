@@ -1,11 +1,18 @@
 import { Download } from 'lucide-react';
+import { useState } from 'react';
 import Card from '../components/Card';
-import { buildStudentDocumentDownloadUrl } from '../lib/api';
+import { Button, Input } from '../components/FormField';
+import { buildStudentDocumentDownloadUrl, changeStudentPassword } from '../lib/api';
 import { useStudentPortal } from '../lib/student-portal';
 
 export default function StudentDetails() {
   const { student, documents, unreadReminders, reminders } = useStudentPortal();
   const latestReminder = reminders[0];
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [passwordInfo, setPasswordInfo] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [updatingPassword, setUpdatingPassword] = useState(false);
 
   return (
     <div className="max-w-[1250px] mx-auto px-6 lg:px-10 py-6 space-y-5">
@@ -69,6 +76,50 @@ export default function StudentDetails() {
             </div>
           ))}
           {documents.length === 0 && <p className="px-6 py-4 text-sm text-slate-500">No documents uploaded yet.</p>}
+        </div>
+      </Card>
+
+      <Card title="Security" subtitle="Update your portal password">
+        <div className="max-w-xl space-y-3">
+          <Input
+            type="password"
+            placeholder="Current password"
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+          />
+          <Input
+            type="password"
+            placeholder="New password (minimum 8 characters)"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+          />
+          <Button
+            variant="primary"
+            disabled={updatingPassword || !currentPassword || !newPassword}
+            onClick={async () => {
+              setPasswordError('');
+              setPasswordInfo('');
+              if (newPassword.length < 8) {
+                setPasswordError('New password must be at least 8 characters.');
+                return;
+              }
+              setUpdatingPassword(true);
+              try {
+                await changeStudentPassword(currentPassword, newPassword);
+                setPasswordInfo('Password updated successfully.');
+                setCurrentPassword('');
+                setNewPassword('');
+              } catch (err) {
+                setPasswordError(err instanceof Error ? err.message : 'Failed to update password.');
+              } finally {
+                setUpdatingPassword(false);
+              }
+            }}
+          >
+            {updatingPassword ? 'Updating...' : 'Change Password'}
+          </Button>
+          {passwordInfo && <p className="text-sm text-success">{passwordInfo}</p>}
+          {passwordError && <p className="text-sm text-danger">{passwordError}</p>}
         </div>
       </Card>
     </div>

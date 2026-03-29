@@ -147,6 +147,20 @@ export function getStudentDocuments() {
   return request<{ items: StudentDocument[] }>('/api/student/documents', {}, true);
 }
 
+export function changeStudentPassword(currentPassword: string, newPassword: string) {
+  return request<{ ok: boolean }>(
+    '/api/student/change-password',
+    {
+      method: 'POST',
+      body: JSON.stringify({
+        current_password: currentPassword,
+        new_password: newPassword,
+      }),
+    },
+    true,
+  );
+}
+
 export function buildStudentDocumentDownloadUrl(pdfId: string): string {
   const token = getStudentToken();
   const query = token ? `?token=${encodeURIComponent(token)}` : '';

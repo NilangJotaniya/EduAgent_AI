@@ -13,7 +13,7 @@ export function clearAdminToken(): void {
   localStorage.removeItem(ADMIN_TOKEN_KEY);
 }
 
-async function request<T>(path: string, options: RequestInit = {}, adminPassword?: string): Promise<T> {
+async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const headers = new Headers(options.headers || {});
   if (!(options.body instanceof FormData)) {
     headers.set('Content-Type', headers.get('Content-Type') || 'application/json');
@@ -21,7 +21,6 @@ async function request<T>(path: string, options: RequestInit = {}, adminPassword
 
   const token = getAdminToken();
   if (token) headers.set('Authorization', `Bearer ${token}`);
-  if (adminPassword) headers.set('X-Admin-Password', adminPassword);
 
   const response = await fetch(`${API_BASE}${path}`, {
     ...options,
@@ -123,6 +122,16 @@ export interface DownloadEvent {
   filename: string;
   source: string;
   downloaded_at: string;
+}
+
+export interface AdminAuditLog {
+  _id: string;
+  admin_id: string;
+  action: string;
+  target_type: string;
+  target_id: string;
+  details?: Record<string, unknown>;
+  created_at: string;
 }
 
 export interface AdminLoginResponse {
@@ -293,6 +302,10 @@ export function getPdfs() {
 
 export function getDownloadEvents() {
   return request<{ items: DownloadEvent[] }>('/api/admin/downloads');
+}
+
+export function getAdminAuditLogs(limit = 200) {
+  return request<{ items: AdminAuditLog[] }>(`/api/admin/audit-logs?limit=${encodeURIComponent(String(limit))}`);
 }
 
 export async function uploadPdf(file: File) {
