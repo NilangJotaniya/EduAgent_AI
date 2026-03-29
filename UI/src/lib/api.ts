@@ -1,12 +1,37 @@
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 const STUDENT_TOKEN_KEY = 'eduagent_student_token';
 
-function getStudentToken(): string {
-  return localStorage.getItem(STUDENT_TOKEN_KEY) || '';
+interface StoredStudentToken {
+  token: string;
+  expiresAt?: string;
 }
 
-function setStudentToken(token: string): void {
-  localStorage.setItem(STUDENT_TOKEN_KEY, token);
+function getStudentToken(): string {
+  const raw = localStorage.getItem(STUDENT_TOKEN_KEY) || '';
+  if (!raw) return '';
+  try {
+    const parsed = JSON.parse(raw) as StoredStudentToken;
+    if (!parsed.token) {
+      clearStudentToken();
+      return '';
+    }
+    if (parsed.expiresAt) {
+      const exp = Date.parse(parsed.expiresAt);
+      if (Number.isFinite(exp) && Date.now() >= exp) {
+        clearStudentToken();
+        return '';
+      }
+    }
+    return parsed.token;
+  } catch {
+    // Backward compatibility with legacy raw token string.
+    return raw;
+  }
+}
+
+function setStudentToken(token: string, expiresAt?: string): void {
+  const payload: StoredStudentToken = { token, expiresAt };
+  localStorage.setItem(STUDENT_TOKEN_KEY, JSON.stringify(payload));
 }
 
 export function clearStudentToken(): void {
@@ -27,6 +52,10 @@ async function request<T>(path: string, options: RequestInit = {}, withStudentAu
     ...options,
     headers,
   });
+
+  if ((response.status === 401 || response.status === 403) && withStudentAuth) {
+    clearStudentToken();
+  }
 
   if (!response.ok) {
     const body = await response.text();
@@ -94,7 +123,7 @@ export async function studentLogin(studentId: string, password: string) {
     method: 'POST',
     body: JSON.stringify({ identifier: studentId, password }),
   });
-  if (res.token) setStudentToken(res.token);
+  if (res.token) setStudentToken(res.token, res.expires_at);
   return res;
 }
 
@@ -148,154 +177,4 @@ export function recordFaqFeedback(faqId: string, isHelpful: boolean) {
     method: 'POST',
     body: JSON.stringify({ is_helpful: isHelpful }),
   });
-}
-
-// Backward-compatible admin exports used by non-routed legacy pages in this project.
-export interface Stats {
-  total_faqs: number;
-  total_escalated: number;
-  pending_escalated: number;
-  uploaded_pdfs: number;
-  exam_entries: number;
-  fee_entries: number;
-}
-
-export interface Escalation {
-  _id: string;
-  student_query: string;
-  reason: string;
-  status: string;
-  timestamp: string;
-  admin_notes?: string;
-}
-
-export interface FAQ {
-  _id: string;
-  category: string;
-  question: string;
-  answer: string;
-  keywords: string;
-  views?: number;
-  helpful_yes?: number;
-  helpful_total?: number;
-}
-
-export interface Exam {
-  _id: string;
-  subject: string;
-  exam_date: string;
-  exam_time: string;
-  venue: string;
-  semester: number;
-}
-
-export interface Fee {
-  _id: string;
-  fee_type: string;
-  amount: number;
-  due_date: string;
-  description: string;
-}
-
-export interface PDFDoc {
-  _id: string;
-  filename: string;
-  original_name: string;
-  pages: number;
-  chunks: number;
-  uploaded_at: string;
-  download_count?: number;
-}
-
-async function adminRequest<T>(path: string, options: RequestInit = {}, adminPassword = ''): Promise<T> {
-  const headers = new Headers(options.headers || {});
-  if (!(options.body instanceof FormData)) {
-    headers.set('Content-Type', headers.get('Content-Type') || 'application/json');
-  }
-  if (adminPassword) headers.set('X-Admin-Password', adminPassword);
-
-  const response = await fetch(`${API_BASE}${path}`, { ...options, headers });
-  if (!response.ok) {
-    const body = await response.text();
-    throw new Error(body || `Request failed: ${response.status}`);
-  }
-  return response.json() as Promise<T>;
-}
-
-export function adminLogin(adminPassword: string) {
-  return adminRequest<{ ok: boolean }>('/api/admin/login', { method: 'POST', body: JSON.stringify({ password: adminPassword }) }, adminPassword);
-}
-
-export function getStats(adminPassword = '') {
-  return adminRequest<Stats>('/api/admin/stats', {}, adminPassword);
-}
-
-export function getEscalations(adminPassword = '', status = 'all') {
-  return adminRequest<{ items: Escalation[] }>(`/api/admin/escalations?status=${encodeURIComponent(status)}`, {}, adminPassword);
-}
-
-export function updateEscalation(adminPassword: string, id: string, status: string, admin_notes: string) {
-  return adminRequest<{ ok: boolean }>(
-    `/api/admin/escalations/${id}`,
-    { method: 'PUT', body: JSON.stringify({ status, admin_notes }) },
-    adminPassword,
-  );
-}
-
-export function getFaqs(adminPassword = '') {
-  return adminRequest<{ items: FAQ[] }>('/api/admin/faqs', {}, adminPassword);
-}
-
-export function addFaq(adminPassword: string, payload: { category: string; question: string; answer: string; keywords: string }) {
-  return adminRequest<{ ok: boolean }>('/api/admin/faqs', { method: 'POST', body: JSON.stringify(payload) }, adminPassword);
-}
-
-export function updateFaq(adminPassword: string, id: string, payload: { answer: string; keywords: string }) {
-  return adminRequest<{ ok: boolean }>(`/api/admin/faqs/${id}`, { method: 'PUT', body: JSON.stringify(payload) }, adminPassword);
-}
-
-export function deleteFaq(adminPassword: string, id: string) {
-  return adminRequest<{ ok: boolean }>(`/api/admin/faqs/${id}`, { method: 'DELETE' }, adminPassword);
-}
-
-export function getExams(adminPassword = '') {
-  return adminRequest<{ items: Exam[] }>('/api/admin/exams', {}, adminPassword);
-}
-
-export function addExam(adminPassword: string, payload: { subject: string; exam_date: string; exam_time: string; venue: string; semester: number }) {
-  return adminRequest<{ ok: boolean }>('/api/admin/exams', { method: 'POST', body: JSON.stringify(payload) }, adminPassword);
-}
-
-export function deleteExam(adminPassword: string, id: string) {
-  return adminRequest<{ ok: boolean }>(`/api/admin/exams/${id}`, { method: 'DELETE' }, adminPassword);
-}
-
-export function getFees(adminPassword = '') {
-  return adminRequest<{ items: Fee[] }>('/api/admin/fees', {}, adminPassword);
-}
-
-export function addFee(adminPassword: string, payload: { fee_type: string; amount: number; due_date: string; description: string }) {
-  return adminRequest<{ ok: boolean }>('/api/admin/fees', { method: 'POST', body: JSON.stringify(payload) }, adminPassword);
-}
-
-export function deleteFee(adminPassword: string, id: string) {
-  return adminRequest<{ ok: boolean }>(`/api/admin/fees/${id}`, { method: 'DELETE' }, adminPassword);
-}
-
-export function getPdfs(adminPassword = '') {
-  return adminRequest<{ items: PDFDoc[] }>('/api/admin/pdfs', {}, adminPassword);
-}
-
-export async function uploadPdf(adminPassword: string, file: File) {
-  const form = new FormData();
-  form.append('file', file);
-  return adminRequest('/api/admin/pdfs', { method: 'POST', body: form }, adminPassword);
-}
-
-export function deletePdf(adminPassword: string, id: string, filename: string) {
-  return adminRequest<{ ok: boolean }>(
-    `/api/admin/pdfs/${id}?filename=${encodeURIComponent(filename)}`,
-    { method: 'DELETE' },
-    adminPassword,
-  );
 }
