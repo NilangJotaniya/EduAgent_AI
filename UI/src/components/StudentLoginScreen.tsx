@@ -70,7 +70,7 @@ export default function StudentLoginScreen() {
                 <MessageCircle size={16} />
                 Enrollment-based sign in
               </div>
-              <p>Use credentials issued by your institute. Contact administration if your account is not active.</p>
+              <p>Use credentials issued by your institute. Contact the student support desk if your account is not active.</p>
             </div>
             {error && <p className="text-sm text-danger">{error}</p>}
           </div>

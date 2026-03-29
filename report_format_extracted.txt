@@ -1,0 +1,241 @@
+[Heading2] Guideline for Industrial Internship Report
+[] (Subject Code: 102000801)
+[] PAPER: Use A4 (210mm X 297mm) Paper.
+[] MARGINS: Margins for pages including the regular text should be as below:
+[] Left: 1.25 Inches
+[] Right: 1.0 Inch
+[] Top: 1.0 Inch
+[] Bottom: 1.0 Inch
+[] CONTENTS: Following should be the order of contents for the report. This order should be strictly maintained.
+[Heading5] Cover Page
+[] First Page
+[Heading5] College Certificate
+[] Company Certificate
+[Heading5] Candidate’s Declaration
+[] Acknowledgement
+[Heading5] Abstract
+[] List of Figures (Format given at the end)
+[Heading5] List of Tables (Format given at the end)
+[] List of Symbols, Abbreviations and Nomenclature
+[Heading5] Table of Contents (Format given at the end)
+[] Chapters 1 to n
+[Heading5] Appendix (optional)
+[] References / Bibliography
+[] Cover Page & Title Page – A specimen copy of the Cover page & Title page of the project report are given in Appendix 1.
+[] Certificate – The Certificate shall be in double line spacing using Font Style Times New Roman and Font Size 14, as per the format in Appendix 2 (Institute Certificate) and Appendix3 (Company Certificate).
+[] Declaration – The candidate’s declaration shall be in double line spacing using Font Style Times New Roman and Font Size 14, as per the format in Appendix 4.
+[] Acknowledgement - The Certificate shall be in double line spacing using Font Style Times New Roman and Font Size 12
+[] Abstract – Abstract should be one page synopsis of the internship report typed 1.5 line spacing, Font Style Times New Roman, italics and Font Size 14. It should contain the objectives of the internship.
+[] List of Figures – The list should use exactly the same captions as they appear below the figures in the text. One and a half spacing should be adopted for typing the matter under this head. A specimen copy of the Table of Contents of the project report is given in Appendix 5. Figure copied from some paper or website has to be captioned with “Courtesy of ”
+[] List of Tables – The list should use the same captions as they appear above the tables in the text. One and a half spacing should be adopted for typing the matter under this head. A specimen copy of the Table of Contents of the project report is given in Appendix 6.
+[] List of Symbols, Abbreviations and Nomenclature – One and a half spacing should be adopted or typing the matter under this head. Standard symbols, abbreviations etc. should be used. A specimen copy of the Table of Contents of the project report is given in Appendix 7.
+[] Table of Contents – The table of contents should list all material following it as well as any material which precedes it. The title page and Certificate will not find a place among the items listed in the Table of Contents but the page numbers of which are in lower case Roman letters. One and a half spacing should be adopted for typing the matter under this head.
+[] Chapters – The chapters may be broadly divided as given in Appendix 9.
+[] The main text will be divided into several chapters and each chapter may be further divided into several divisions and sub-divisions, as required.
+[] Each chapter should be given an appropriate title.
+[] Tables and figures in a chapter should be placed in the immediate vicinity of the reference where they are cited.
+[] Footnotes should be used sparingly. They should be typed single space and placed directly underneath in the very same page, which refers to the material they annotate.
+[] Appendices – Appendices are provided to give supplementary information, which is included in the main text may serve as a distraction and cloud the central theme.
+[] Appendices should be numbered using Arabic numerals, e.g. Appendix , 2 etc.
+[] Appendices, Tables and References appearing in appendices should be numbered and referred at appropriate places just as in the case of chapters.
+[] Appendices shall carry the title of the work reported and the same title shall be made in the contents page also.
+[] List of References –The listing of references should be typed 4 spaces below the heading “REFERENCES” in alphabetical order in single spacing left – justified. The reference material should be listed in the alphabetical order of the first author. The name of the author/authors should be immediately followed by the year and other details.
+[] Website citation has to be very specific not like „google.com‟ or „wikipedia.org‟. Figure copied from some paper or website has to be captioned with “Courtesy of_”
+[] A typical illustrative list given below relates to the citation example quoted above.
+[Heading5] REFERENCES
+[] Ariponnammal, S. and Natarajan, S. (1994) „Transport Phonomena of Sm Sel – X Asx‟, Pramana – Journal of Physics Vol.42, No.1, pp.421-425.
+[] Barnard, R.W. and Kellogg, C. (1980) „Applications of Convolution Operators to Problems in Univalent Function Theory‟, Michigan Mach, J., Vol.27, pp.81–94.
+[] Shin, K.G. and Mckay, N.D. (1984) „Open Loop Minimum Time Control of Mechanical Manipulations and its Applications‟, Proc.Amer.Contr.Conf., San Diego, CA, pp. 1231- 1236.
+[] Table and figures - By the word Table, is meant tabulated numerical data in the body of the project report as well as in the appendices. All other non-verbal materials used in the body of the project work and appendices such as charts, graphs, maps, photographs and diagrams may be designated as figures.
+[Heading5] FOLLOWING MUST BE STRICTLY FOLLOWED
+[] TOP-LEFT CORNER: Enrollment Number of the student
+[] TOP-RIGHT CORNER: Chapter Heading BOTTOM-LEFT CORNER: CVM University
+[] BOTTOM-CENTER: Page number BOTTOM-RIGHT CORNER: College Name
+[Heading5] NUMBERING
+[] All pages in the report except the cover pages and dedication page must be numbered. All the page numbers should be located at the BOTTOM CENTER of the page.
+[] The page numbering starting from candidate‟s declaration up to the beginning of the chapters should be numbered in small roman letters, i.e. i, ii, …
+[] The page numbering starting from the beginning of Chapter 1 up to the end of the report, should be numbered in Arabic numerals, i.e. 1,2, 3,….
+[Heading5] PREPARATION OF CHAPTERS
+[] COLOUR: All the text including Tables should be Black prints. However, Graphs and Figures can have colour prints.
+[Heading5] FONT:
+[] Chapter Headings: Times New Roman 16pts, bold print all capitals
+[] Section Headings: Times New Roman 14 pts, bold print all capitals
+[] Subsection Headings : Times New Roman 12 pts, bold print leading capitals (only first letter in each word should be capital
+[] Regular Text: Times New Roman 12 pts, normal prints
+[] Special Text: Times New Roman Italics 12 pts (for foot notes, symbols, quotes, Mathematical notations….)
+[Heading5] SPACING/ALIGNMENT
+[] Use 1.5 spacing between lines of regular text Use double spacing between:
+[] Paragraphs
+[] Chapter title and section Heading
+[] Section heading and paragraphs
+[] Table Title and Table
+[] Figure Title and Figure
+[] Use single spacing between:
+[] 1. text corresponding to bullets, listing and quotes in the main body of text
+[] All paragraphs in the report are to be fully justified from the first line to the last line and should start from left without any hyphenation/indent. Text corresponding to bullets, listings and quotes in the main body of text should be indented.
+[Heading5] SECTION/SUBSECTION NUMBERING
+[] Section numbering should be left justified using bold print with Arabic numerals and decimals.
+[] Section numbering: <Chapter.Section number> <3 blanks> Section heading
+[] Example: 1.1, 2.1
+[] Subsection numbering: <Chapter.Subsectionnumber> Example: 1.2.1
+[Heading5] EQUATIONS/FORMULAS
+[] Numbering for equation if necessary, should be done in the following format: (Chapter number. Equation serial number)
+[] Example:
+[] Y= mx + b(3.1.1)
+[] FIGURES: Figures should follow immediately after/on immediate next page after they are referred to for the first time in the text. Figure headings should be given at the bottom of the figure. All the figures in landscape format must be placed in such a way that their top portions are to the left side of the page. However, numbering should be at the bottom of the report for landscape page (similar to the next page). All figures are to be central aligned onthe page.
+[Heading5] Format for Figure Heading:
+[] Fig. <blank> Chapter number. Figure Serial number <3 blanks> Figure title (center aligned, leading caps)
+[] Example:
+[] Fig 6.13 Typical Component Event
+[Heading5] DIAGRAMS:
+[] Diagrams larger than A4 size are not encouraged. If larger sizes are absolutely necessary, they should be folded to A4 size. Each drawing is to be numbered and referred to as Figures only. Diagram title should be similar to figure titles.
+[Heading5] TABLES:
+[] Tables should follow immediately after/on immediate next page after they are referred to for the first time in the text. Table heading should be given at the top of the table. All the tables in landscape format must be placed in such a way that their top portions are to the left side of the page. However, numbering should be at the bottom of the report for landscape page. All tables are to be central aligned on the page.
+[] Format for Table heading:
+[] Table <blank> Chapter number. Table Serial number <3 blanks> Table Title (center aligned, leading caps)
+[] Example:
+[] Table 6.13 Comparison of methods
+[] EXPERIENCE : Candidate should include the environment and support provided by the respective company, co-operation of the people. Please mention if the job has been offered.
+[] BINDING: The report should be Hard Bounded. The Cover must be of Black colour with golden coloured letters.
+[Heading5] NUMBER OF COPIES (Hard Copy):
+[] 1 student copy + 1 copy to the college
+[Heading5] NUMBER OF COPIES (Soft Copy):
+[] The Sofy Copy of the report has to be submitted to the Departmental Industrial Internship Coordinator in Single PDF File. The File name must be in following format.
+[] FileName: <EnrollmentNo>_<Year>.pdf
+[] 🡺  FileName example: 12345678901234_2024.pdf
+[] Industrial Internship Report
+[] Industry Name
+[Heading4] Submitted by
+[Heading2] [NAME OF THE CANDIDATE]
+[Heading3] [CVMU Enrolment Number]
+[Heading4] In partial fulfillment for the award of the degree of
+[Heading2] BACHELOR OF ENGINEERING / TECHNOLOGY
+[] in
+[] [Branch Name]
+[] [College Name]
+[Heading2] The Charutar Vidya Mandal (CVM) University, Vallabh Vidyanagar - 388120
+[Heading5] [Month, Year]
+[Heading2] [College Name]
+[] [Programme Name]
+[Heading1] CERTIFICATE
+[] This is to certify that <Name of Student> (<EnrollmentNo>) has submitted the Industrial Internship report based on internship undergone at <Name of Industry> for a period of <no. of weeks> weeks from <StartDate> to <EndDate> in partial fulfillment for the degree of Bachelor of Engineering in <Name of the Branch>, <College Name> at The Charutar Vidya Mandal (CVM) University, Vallabh Vidyanagar during the academic year 2023 – 24.
+[] <Sign><Sign>
+[] <Name of Internal Guide><Name of Head of the Department>
+[] Internal Guide(s)Head of the Department
+[Heading2] [Industry Letter Head]
+[] Date: DD/MM/YYYY
+[Heading2] TO WHOM IT MAY CONCERN
+[] This is to certify that <Student Name>, a student of <Institute Name> has successfully completed his/her internship in the field of <Internship Area / Field> from <Start Date> to <End Date> (Total number of Weeks:____) under the guidance of <Industry Mentor>.
+[] His/her internship activities include <Internship Activities>.
+[] During the period of her/ his internship program with us, he / she had been exposed to different processes and was found diligent, hardworking, and inquisitive.
+[] We wish him every success in his life and career.
+[] For <Industry Name>
+[] Authorized Signature with Industry Stamp
+[Heading1] DECLARATION
+[] I, <Name of Student> (<EnrollmentNo>), hereby declare that the Industrial Internship report submitted in partial fulfillment for the degree of Bachelor of Engineering in <Name of the Branch>, <College Name>, The Charutar Vidya Mandal (CVM) University, Vallabh Vidyanagar, is a bonafide record of  work  carried  out  by me at <Industry Name> under the supervision of  <External  /  Internal  Guide Name> and that no part of this report has been directly  copied  from  any  students’  reports or taken from any other source, without providing due reference.
+[Heading3] List of Figures
+[] Fig 1.1 Use case / Procedure Diagram2
+[] Fig 1.2 Activity / Process Diagram5
+[] Fig 2.1 Use case / Procedure Diagram12
+[] Fig 2.2 Activity / Process Diagram15
+[] Fig 2.3 Use case / Procedure Diagram22
+[] Fig 2.4 Activity / Process Diagram25
+[] Fig 3.1 Use case / Procedure Diagram32
+[] Fig 4.1 Activity / Process Diagram35
+[] Fig 4.2 Use case / Procedure Diagram42
+[] Fig 4.3 Activity / Process Diagram43
+[] List of Tables
+[] Table 1.1 Popular Methods / Techniques2
+[] Table 1.2 User / Reading / Observation Table5
+[] Table 2.1 Popular Methods / Techniques12
+[] Table 2.2 User / Reading / Observation Table15
+[] Table 2.3 Popular Methods / Techniques22
+[] Table 2.4 User / Reading / Observation Table25
+[] Table 3.1 Popular Methods / Techniques32
+[] Table 4.1 User / Reading / Observation Table35
+[] Table 4.2 Popular Methods / Techniques42
+[] Table 4.3 User / Reading / Observation Table43
+[Heading3] Abbreviations
+[] Table of Contents
+[] Acknowledgementi
+[] Abstractii
+[] List of Figuresiii
+[] List of Tablesiv
+[] List of Abbreviationsv
+[] Table of Contentsvi
+[Heading5] Chapter 1 Title of chapter1
+[] Introduction to Topic2
+[] How to do3
+[] 1.1.1 How to do3
+[] 1.1.1 How to do4
+[] Introduction to Topic4
+[] Introduction to Topic5
+[] Introduction to Topic6
+[Heading5] Chapter 2 Title of chapter8
+[] Introduction to Topic9
+[] How to do10
+[Heading5] Chapter 3 Title of chapter11
+[] Introduction to Topic14
+[] How to do16
+[] Introduction to Topic17
+[Heading5] References40
+[Heading5] Appendix42
+[Heading3] Details of Chapters
+[] Overview of the Company
+[] History
+[] Different product / scope of work
+[] Organization chart
+[] Capacity of plant
+[] Overview of different plant/unit/department/shop of the organization and Layout of the production/process being carried out in company
+[] It includes the details about the work being carried out in each department.
+[] List the technical specifications of major equipment used in each department.
+[] Prepare schematic layout which shows the sequence of operation for manufacturing of end product.
+[] Explain in details about each stage of production.
+[] Introduction to Project / Internship and Project / Internship Management
+[] Project / Internship Summary – Key To a good summary is the FIRST sentence, which MUST contain the most essential information that you wish to convey.
+[] Purpose
+[] Objective
+[] Scope (what it can do and can‟t do)
+[] Technology and Literature Review
+[] Project / Internship Planning
+[] Project / Internship Development Approach and Justification
+[] Project / Internship Effort and Time, Cost Estimation
+[] Roles and Responsibilities
+[] Group Dependencies
+[] Project / Internship Scheduling (Gantt Chart/PERT/Network Chart)
+[] System Analysis
+[] Study of Current System
+[] Problem and Weaknesses of Current System
+[] Requirements of New System
+[] System Feasibility
+[] Does the system contribute to the overall objectives of the organization?
+[] Can the system be implemented using the current technology and within the given cost and schedule constraints
+[] Can the system be integrated with other systems which are already inplace?
+[] Activity / Process in New System / Proposed System
+[] Features of New System / Proposed System
+[] List Main Modules / Components / Processes / Techniques of New System / Proposed System
+[] Selection of Hardware / Software / Algorithms / Methodology / Techniques / Approaches and Justification
+[] System Design
+[] System Design & Methodology
+[] Database Design / Data Structure Design / Circuit Design / Process Design / Structure Design
+[] Input / Output and Interface Design (If applicable)
+[] State Transition Diagram (optional)
+[] Samples of Forms, Reports and Interface
+[] Access Control / Mechanism / Security (If applicable)
+[] Implementation
+[] Implementation Platform / Environment
+[] Process / Program / Technology / Modules Specification(s)
+[] Finding / Results / Outcomes
+[] Result Analysis / Comparison / Deliberations
+[] Testing
+[] Testing Plan / Strategy
+[] Test Results and Analysis
+[] Test Cases (test ID, test condition, expected output, actual output,remark)
+[] Conclusion and Discussion
+[] Overall Analysis of Internship / Project Viabilities
+[] Photographs and date of surprise visit by institute mentor (Optional)
+[] Industrial Visit and / or Internship Progress Review meeting with Industry Guide / Mentor / External Guide can be conducted using digital platform (Video Call OR Digital Platform (eg. Google Meet / Microsoft Team or Zoom Meeting etc)
+[] Dates of Continuous Evaluation (CE-I and CE-II)
+[] Problem Encountered and Possible Solutions
+[] Summary of Internship / Project work
+[] Limitation and Future Enhancement

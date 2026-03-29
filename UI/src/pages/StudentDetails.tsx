@@ -49,7 +49,7 @@ export default function StudentDetails() {
         </Card>
       </div>
 
-      <Card title="Document Center" subtitle="Academic files and notices shared by administration" noPadding>
+      <Card title="Document Center" subtitle="Academic files and notices shared by your institute" noPadding>
         <div className="divide-y divide-slate-100">
           {documents.map((doc) => (
             <div key={doc._id} className="px-6 py-4 flex items-center justify-between gap-3">

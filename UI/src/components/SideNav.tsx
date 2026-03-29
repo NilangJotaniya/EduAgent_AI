@@ -1,9 +1,7 @@
 import { NavLink } from 'react-router-dom';
-import { ArrowLeft, LayoutDashboard, MessageCircle, Menu, X } from 'lucide-react';
+import { LayoutDashboard, MessageCircle, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-
-const ADMIN_APP_URL = import.meta.env.VITE_ADMIN_APP_URL || 'http://localhost:5174';
 
 export default function SideNav() {
   const [open, setOpen] = useState(false);
@@ -75,13 +73,6 @@ export default function SideNav() {
             <MessageCircle size={18} />
             Student Chat
           </NavLink>
-          <a
-            href={ADMIN_APP_URL}
-            className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-burgundy-200 hover:bg-burgundy-600/50 hover:text-white transition-all duration-200"
-          >
-            <ArrowLeft size={18} />
-            Back to Admin
-          </a>
         </nav>
 
         <div className="p-4 border-t border-burgundy-600">
