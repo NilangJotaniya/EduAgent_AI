@@ -1,4 +1,4 @@
-# 🎓 EduAgent AI — Multi-Agent Assistant for Academic Administration
+﻿# 🎓 EduAgent AI — Multi-Agent Assistant for Academic Administration
 
 <div align="center">
 
@@ -11,7 +11,7 @@
 [![Ollama](https://img.shields.io/badge/Ollama-phi3:mini-black?style=flat-square&logo=ollama&logoColor=white)](https://ollama.com)
 [![LangChain](https://img.shields.io/badge/LangChain-0.1.12-1C3C3C?style=flat-square&logo=chainlink&logoColor=white)](https://langchain.com)
 
-**A GenAI-powered, multi-agent intelligent assistant that automates and simplifies academic administration tasks in colleges and universities.**
+**A practical academic support system for students and administrators in colleges and universities.**
 
 [Features](#-features) • [Architecture](#-system-architecture) • [Tech Stack](#-tech-stack) • [Getting Started](#-getting-started)
 
@@ -71,27 +71,27 @@ Instead of students manually visiting offices or searching across scattered docu
 
 ## 🏗️ System Architecture
 
-```
+```text
 Student Query
-      │
-      ▼
-┌─────────────────────────────────────────────┐
-│              EduAgent AI Pipeline           │
-│                                             │
-│  1. Escalation Agent  ──► Sensitive? ──► Admin Review
-│         │ No                                │
-│         ▼                                   │
-│  2. Query Understanding Agent               │
-│         │                                   │
-│         ▼                                   │
-│  3. Information Retrieval Agent             │
-│         │  MongoDB + optional PDF context   │
-│         ▼                                   │
-│  4. Response Generation Agent               │
-│         │  phi3:mini via Ollama             │
-│         ▼                                   │
-│      AI Response / Downloads / Feedback     │
-└─────────────────────────────────────────────┘
+    |
+    v
++---------------------------------------------------+
+|                 EduAgent AI Pipeline              |
+|                                                   |
+| 1) Escalation Agent -> Sensitive query? -> Admin  |
+|    | No                                            |
+|    v                                               |
+| 2) Query Understanding Agent                       |
+|    |                                               |
+|    v                                               |
+| 3) Information Retrieval Agent                     |
+|    | MongoDB + optional PDF context               |
+|    v                                               |
+| 4) Response Generation Agent                       |
+|    | phi3:mini via Ollama                          |
+|    v                                               |
+| AI Response / Downloads / Feedback                 |
++---------------------------------------------------+
 ```
 
 ---
@@ -113,33 +113,36 @@ Student Query
 
 ## 📁 Project Structure
 
-```
+```text
 EduAgent_AI/
-│
-├── backend_api.py                 ← FastAPI backend
-├── start_llm.py                   ← Ollama/bootstrap helpers
-├── app.py                         ← Legacy Streamlit entry
-│
+├── backend_api.py
+├── app.py
+├── start_llm.py
+├── requirements.txt
+├── PROJECT_ROADMAP.md
+├── README.md
+├── .gitignore
 ├── agents/
+│   ├── escalation_agent.py
 │   ├── query_agent.py
-│   ├── retrieval_agent.py
 │   ├── response_agent.py
-│   └── escalation_agent.py
-│
+│   └── retrieval_agent.py
 ├── database/
 │   ├── mongo_db.py
 │   └── seed_mongodb.py
-│
-├── UI/                            ← Student frontend
-├── UI-admin/                      ← Admin frontend
+├── pages/
+│   ├── admin_panel.py
+│   ├── student_chat.py
+│   └── student_login.py
 ├── utils/
 │   ├── pdf_processor.py
 │   └── student_importer.py
-│
-├── uploaded_pdfs/                 ← Local uploaded files (gitignored)
-├── vector_db/                     ← Local vector index (gitignored)
-├── .env                           ← Local secrets (gitignored)
-└── requirements.txt
+├── UI/                 # student frontend
+├── UI-admin/           # admin frontend
+├── screenshots/
+├── report_images/
+├── uploaded_pdfs/      # local uploads (gitignored)
+└── vector_db/          # local vector index (gitignored)
 ```
 
 ---
@@ -280,6 +283,24 @@ npm run dev
 
 ---
 
+## Screenshots
+
+The file names below match your `screenshots/` folder.
+
+| View | File Name | Preview |
+|---|---|---|
+| Student Login | `StudentLogin.png` | ![Student Login](screenshots/StudentLogin.png) |
+| Student Details | `StudentDetails.png` | ![Student Details](screenshots/StudentDetails.png) |
+| Student Chat | `StudentChat.png` | ![Student Chat](screenshots/StudentChat.png) |
+| Admin Login | `AdminLogin.png` | ![Admin Login](screenshots/AdminLogin.png) |
+| Admin Dashboard | `AdminDashboard.png` | ![Admin Dashboard](screenshots/AdminDashboard.png) |
+| Admin FAQs | `AdminFAQS.png` | ![Admin FAQs](screenshots/AdminFAQS.png) |
+| Admin Escalation | `AdminEscaltion.png` | ![Admin Escalation](screenshots/AdminEscaltion.png) |
+| Admin Fees Management | `AdminFeesManagement.png` | ![Admin Fees Management](screenshots/AdminFeesManagement.png) |
+| Admin Student Panel | `AdminStudentpanel.png` | ![Admin Student Panel](screenshots/AdminStudentpanel.png) |
+
+---
+
 ## 🔮 Future Enhancements
 
 - [ ] first-login password reset flow
@@ -301,5 +322,4 @@ npm run dev
 </div>
 
 ---
-
 
