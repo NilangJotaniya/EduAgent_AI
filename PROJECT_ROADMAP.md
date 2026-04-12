@@ -7,7 +7,7 @@ This file stores the next upgrades so we can continue from here anytime.
 - Per-student fee ledger with reminder actions
 - Document center with real download tracking
 
-## Next (when you ask)
+## Next
 - Role-based accounts (`admin`, `student`, `accounts`, `exam-cell`)
 - Student signup/reset-password flow
 - Escalation ownership + SLA timers + email/WhatsApp alerts

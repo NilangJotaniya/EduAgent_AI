@@ -268,3 +268,24 @@ npm run dev
 [![GitHub](https://img.shields.io/badge/GitHub-NilangJotaniya-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/NilangJotaniya)
 
 </div>
+
+---
+
+## Screenshots
+
+Add your screenshots in a `screenshots/` folder at the project root, then update these image links.
+
+### Student Portal
+
+![Student Login](screenshots/student-login.png)
+![Student Details](screenshots/student-details.png)
+![Student Chat](screenshots/student-chat.png)
+
+### Admin Portal
+
+![Admin Login](screenshots/admin-login.png)
+![Admin Dashboard](screenshots/admin-dashboard.png)
+![FAQ Management](screenshots/admin-faq-management.png)
+![Escalations](screenshots/admin-escalations.png)
+![Document Library](screenshots/admin-documents.png)
+![Fees Management](screenshots/admin-fees.png)
