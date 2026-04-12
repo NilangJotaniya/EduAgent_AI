@@ -242,32 +242,31 @@ npm run dev
 
 ### Student Portal
 
+#### Student Login
 ![Student Login](screenshots/StudentLogin.png)
-<img width="1919" height="916" alt="StudentLogin" src="https://github.com/user-attachments/assets/9b6c77aa-3665-4809-a0d9-1cbca6b6d598" />
 
+#### Student Details
 ![Student Details](screenshots/StudentDetails.png)
-<img width="1920" height="1150" alt="StudentDetails" src="https://github.com/user-attachments/assets/228e7db5-4602-49df-b9f5-a785933f79e4" />
 
+#### Student Chat
 ![Student Chat](screenshots/StudentChat.png)
-<img width="1920" height="1078" alt="StudentChat" src="https://github.com/user-attachments/assets/5971bfd5-7a33-478a-9070-4dab898d8dad" />
-
 
 ### Admin Portal
 
+#### Admin Login
 ![Admin Login](screenshots/AdminLogin.png)
-<img width="1919" height="915" alt="AdminLogin" src="https://github.com/user-attachments/assets/e532ff82-5cd4-45c0-a53d-8206aa8ec1ec" />
 
+#### Admin Dashboard
 ![Admin Dashboard](screenshots/AdminDashboard.png)
-<img width="1920" height="1373" alt="AdminDashboard" src="https://github.com/user-attachments/assets/863a6ca5-b575-4dbe-828e-5df7be370651" />
 
+#### AdminFAQS
 ![FAQ Management](screenshots/AdminFAQS.png)
-<img width="1920" height="913" alt="AdminFAQS" src="https://github.com/user-attachments/assets/6a1e3b5f-328a-48e9-9777-f175318f5631" />
 
+#### Admin Escalations
 ![Escalations](screenshots/AdminEscaltion.png)
-<img width="1920" height="1475" alt="AdminEscaltion" src="https://github.com/user-attachments/assets/48c74e9e-3841-4d42-82aa-72ff4b102c1a" />
 
+#### AdminFeesManagement
 ![Fees Management](screenshots/AdminFeesManagement.png)
-<img width="1920" height="913" alt="AdminFeesManagement" src="https://github.com/user-attachments/assets/788bc583-d945-4b87-a061-6a5dd6f6d00f" />
 
 ## 📦 Notes
 
